@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0 ,user-scalable=no">
+    <title>TUI Calender</title>
+    <link rel="stylesheet" type="text/css" href="css/tui-calendar.css" />
+
+    <style type="text/css">
+    @import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+
+    .container {
+        max-width: 100%;
+        margin: 150px auto;
+        padding: 0 15px;
+    }
+
+    img {
+        width: 100%;
+    }
+
+    body {
+        padding: 0;
+        margin: 0;
+        font-family: 'Open Sans', sans-serif;
+        font-size: 16px;
+        font-weight: 400;
+        line-height: 1.2;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+
+    </style>
+</head>
+
+<body>
+    <div class="container">
+         <button onclick="calendar.prev();">prev</button> <button onclick="calendar.today();">Today</button> <button onclick="calendar.next();">next</button>
+        <div id="calendar" style="height: 800px;"></div>
+    </div>
+
+    <script src="js/tui-code-snippet.min.js"></script>
+    <!-- <script src="js/tui-dom.js"></script> -->
+    <script src="js/tui-time-picker.min.js"></script>
+    <script src="js/tui-date-picker.min.js"></script>
+    <script src="js/tui-calendar.js"></script>
+    <script src="js/moment.min.js"></script>
+
+    <script>
+         // register templates
+          var templates = {
+            popupIsAllDay: function() {
+              return 'All Day';
+            },
+            popupStateFree: function() {
+              return 'Free';
+            },
+            popupStateBusy: function() {
+              return 'Busy';
+            },
+            titlePlaceholder: function() {
+              return 'Subject';
+            },
+            locationPlaceholder: function() {
+              return 'Location';
+            },
+            startDatePlaceholder: function() {
+              return 'Start date';
+            },
+            endDatePlaceholder: function() {
+              return 'End date';
+            },
+            popupSave: function() {
+              return 'Save';
+            },
+            popupUpdate: function() {
+              return 'Update';
+            },
+            popupDetailDate: function(isAllDay, start, end) {
+              var isSameDate = moment(start).isSame(end);
+              var endFormat = (isSameDate ? '' : 'YYYY.MM.DD ') + 'hh:mm a';
+
+              if (isAllDay) {
+                return moment(start).format('YYYY.MM.DD') + (isSameDate ? '' : ' - ' + moment(end).format('YYYY.MM.DD'));
+              }
+
+              return (moment(start).format('YYYY.MM.DD hh:mm a') + ' - ' + moment(end).format(endFormat));
+            },
+            popupDetailLocation: function(schedule) {
+              return 'Location : ' + schedule.location;
+            },
+            popupDetailUser: function(schedule) {
+              return 'User : ' + (schedule.attendees || []).join(', ');
+            },
+            popupDetailState: function(schedule) {
+              return 'State : ' + schedule.state || 'Busy';
+            },
+            popupDetailRepeat: function(schedule) {
+              return 'Repeat : ' + schedule.recurrenceRule;
+            },
+            popupDetailBody: function(schedule) {
+              return 'Body : ' + schedule.body;
+            },
+            popupEdit: function() {
+              return 'Edit';
+            },
+            popupDelete: function() {
+              return 'Delete';
+            }
+        };
+
+        var MONTHLY_CUSTOM_THEME = {
+            // month header 'dayname'
+            'month.dayname.height': '42px',
+            'month.dayname.borderLeft': 'none',
+            'month.dayname.paddingLeft': '8px',
+            'month.dayname.paddingRight': '0',
+            'month.dayname.fontSize': '13px',
+            'month.dayname.backgroundColor': 'inherit',
+            'month.dayname.fontWeight': 'normal',
+            'month.dayname.textAlign': 'left',
+
+            // month day grid cell 'day'
+            'month.holidayExceptThisMonth.color': '#f3acac',
+            'month.dayExceptThisMonth.color': '#bbb',
+            'month.weekend.backgroundColor': '#fafafa',
+            'month.day.fontSize': '16px',
+
+            // month schedule style
+            'month.schedule.borderRadius': '5px',
+            'month.schedule.height': '18px',
+            'month.schedule.marginTop': '2px',
+            'month.schedule.marginLeft': '10px',
+            'month.schedule.marginRight': '10px',
+
+            // month more view
+            'month.moreView.boxShadow': 'none',
+            'month.moreView.paddingBottom': '0',
+            'month.moreView.border': '1px solid #9a935a',
+            'month.moreView.backgroundColor': '#f9f3c6',
+            'month.moreViewTitle.height': '28px',
+            'month.moreViewTitle.marginBottom': '0',
+            'month.moreViewTitle.backgroundColor': '#f4f4f4',
+            'month.moreViewTitle.borderBottom': '1px solid #ddd',
+            'month.moreViewTitle.padding': '0 10px',
+            'month.moreViewList.padding': '10px'
+          };
+
+    var calendar = new tui.Calendar('#calendar', {
+        defaultView: 'month',
+        template: templates,
+        useCreationPopup: true,
+        useDetailPopup: true,
+        theme: MONTHLY_CUSTOM_THEME, // set theme,
+        methods: {
+    onBeforeCreateSchedule(e) {
+      var title = e.title;
+      var startTime = e.start;
+      var endTime = e.end;
+      var isAllDay = e.isAllDay;
+      var schedule;
+
+      schedule = [
+        {
+          id: +new Date(),
+          title: title,
+          isAllDay: isAllDay,
+          start: startTime,
+          end: endTime,
+          category: "allday"
+        }
+      ];
+
+      this.$refs.tuiCalendar.invoke("createSchedules", schedule);
+    },
+}
+    });
+
+    calendar.createSchedules([
+        {
+            id: '1',
+            calendarId: '1',
+            title: 'my schedule',
+            category: 'time',
+            dueDateClass: '',
+            start: '2021-07-07T09:30:00',
+            end: '2021-07-09T12:30:00'
+        },
+        {
+            id: '2',
+            calendarId: '1',
+            title: 'second schedule',
+            category: 'time',
+            dueDateClass: '',
+            start: '2021-07-18T17:30:00+09:00',
+            end: '2021-07-19T17:31:00+09:00',
+            isReadOnly: true    // schedule is read-only
+        }
+    ]);
+
+    // calendar.setCalendarColor('1', {
+    //     color: '#e8e8e8',
+    //     bgColor: '#585858',
+    //     borderColor: '#a1b56c'
+    // });
+
+    // calendar.on({
+    //     'clickSchedule': function(e) {
+    //         console.log('clickSchedule', e);
+    //     },
+    //     'beforeCreateSchedule': function(e) {
+    //         console.log('beforeCreateSchedule', e);
+    //         // open a creation popup
+    //     },
+    //     'beforeUpdateSchedule': function(e) {
+    //         console.log('beforeUpdateSchedule', e);
+    //         e.schedule.start = e.start;
+    //         e.schedule.end = e.end;
+    //         calendar.updateSchedule(e.schedule.id, e.schedule.calendarId, e.schedule);
+    //     },
+    //     'beforeDeleteSchedule': function(e) {
+    //         console.log('beforeDeleteSchedule', e);
+    //         calendar.deleteSchedule(e.schedule.id, e.schedule.calendarId);
+    //     }
+    // });
+
+    </script>   
+</body>
+
+</html>
